@@ -22,12 +22,13 @@ const Recorder: FC<RecorderProps> = () => {
   const [state, setState] = useState<States>(States.IDLE);
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
+  const [activeDevice, setActiveDevice] = useState<string>("");
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
     if (videoElRef.current) {
-      getUserMedia();
+      startDevice();
     }
   }, [videoElRef]);
 
@@ -49,13 +50,22 @@ const Recorder: FC<RecorderProps> = () => {
 
   const secondButtonIcon = state === States.PAUSED ? play12Filled : pause12Filled;
 
-  const getUserMedia = async () => {
+  const startDevice = async () => {
+    const devices = await getDevices();
+    await getUserMedia(devices[0].deviceId);
+  };
+
+  const getDevices = async () => {
+    const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
+      (device) => device.kind === "videoinput"
+    );
+    setMediaDevices(mediaDevices);
+    return mediaDevices;
+  };
+
+  const getUserMedia = async (deviceId: string) => {
     try {
-      const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
-        (device) => device.kind === "videoinput"
-      );
-      setMediaDevices(mediaDevices);
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { deviceId } });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
         setStream(stream);
@@ -65,6 +75,20 @@ const Recorder: FC<RecorderProps> = () => {
       console.error(err);
       return null;
     }
+  };
+
+  const changeDevice = (deviceId: string) => {
+    if (!deviceId) return;
+    const deviceInfo = mediaDevices.filter((d) => d.deviceId === deviceId);
+    if (!deviceInfo) return;
+
+    if (stream) {
+      stream.getTracks().forEach((track) => {
+        track.stop();
+      });
+    }
+    setActiveDevice(deviceId);
+    getUserMedia(deviceId);
   };
 
   const actionButtonHandler = () => {
@@ -124,7 +148,11 @@ const Recorder: FC<RecorderProps> = () => {
     <div className="w-screen h-screen flex justify-center items-center">
       <div className="h-full max-h-full max-w-full mx-auto aspect-3/4 bg-slate-600 relative">
         {mediaDevices.length > 0 && (
-          <select value={mediaDevices[0].deviceId} className="absolute top-0 left-0 z-10">
+          <select
+            value={activeDevice}
+            className="absolute top-0 left-0 z-10"
+            onChange={(e) => changeDevice(e.target.value)}
+          >
             {mediaDevices.map((device) => (
               <option key={device.deviceId} value={device.groupId}>
                 {device.label}
