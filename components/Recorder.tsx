@@ -1,12 +1,12 @@
 import { FC } from "react";
 import { useEffect, useRef, useState } from "react";
 import RecordRTC from "recordrtc";
-import { Icon, IconifyIcon } from '@iconify/react';
-import record12Regular from '@iconify/icons-fluent/record-12-regular';
-import arrowCounterclockwise12Regular from '@iconify/icons-fluent/arrow-counterclockwise-12-regular';
-import stop16Filled from '@iconify/icons-fluent/stop-16-filled';
-import play12Filled from '@iconify/icons-fluent/play-12-filled';
-import pause12Filled from '@iconify/icons-fluent/pause-12-filled';
+import { Icon, IconifyIcon } from "@iconify/react";
+import record12Regular from "@iconify/icons-fluent/record-12-regular";
+import arrowCounterclockwise12Regular from "@iconify/icons-fluent/arrow-counterclockwise-12-regular";
+import stop16Filled from "@iconify/icons-fluent/stop-16-filled";
+import play12Filled from "@iconify/icons-fluent/play-12-filled";
+import pause12Filled from "@iconify/icons-fluent/pause-12-filled";
 
 enum States {
   IDLE,
@@ -18,6 +18,7 @@ enum States {
 interface RecorderProps {}
 
 const Recorder: FC<RecorderProps> = () => {
+  const [mediaDevices, setMediaDevices] = useState<MediaDeviceInfo[]>([]);
   const [state, setState] = useState<States>(States.IDLE);
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
@@ -50,9 +51,11 @@ const Recorder: FC<RecorderProps> = () => {
 
   const getUserMedia = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: {
-        aspectRatio: 3/4
-      } });
+      const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
+        (device) => device.kind === "videoinput"
+      );
+      setMediaDevices(mediaDevices);
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
         setStream(stream);
@@ -115,21 +118,30 @@ const Recorder: FC<RecorderProps> = () => {
   const recordAgain = () => {
     videoElRef.current!.srcObject = stream;
     setState(States.IDLE);
-  }
+  };
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <div className="h-full max-h-full max-w-full mx-auto aspect-3/4 bg-slate-600 relative">
+        {mediaDevices && (
+          <select value={mediaDevices[0].deviceId} className="absolute top-0 left-0 z-10">
+            {mediaDevices.map((device) => (
+              <option key={device.deviceId} value={device.groupId}>
+                {device.label}
+              </option>
+            ))}
+          </select>
+        )}
         <div className="flex absolute bottom-20 justify-center items-center w-full space-x-4">
-          <button className="z-10 bg-white/25 text-white p-1 rounded-full" onClick={actionButtonHandler}>
-            <Icon icon={mainButtonIcon} className="text-4xl text-red-400"/>
+          <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={actionButtonHandler}>
+            <Icon icon={mainButtonIcon} className="text-6xl text-red-400" />
           </button>
           {(state === States.RECORDING || state === States.PAUSED) && (
             <button
-              className="z-10 bg-white/25 text-white p-1 rounded-full"
+              className="z-10 bg-black/50 text-white p-2 rounded-full"
               onClick={() => (state === States.PAUSED ? resumeRecording() : pauseRecording())}
             >
-              <Icon icon={secondButtonIcon} className="text-4xl"/>
+              <Icon icon={secondButtonIcon} className="text-6xl" />
             </button>
           )}
         </div>
