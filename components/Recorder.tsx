@@ -59,13 +59,20 @@ const Recorder: FC<RecorderProps> = () => {
     const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
       (device) => device.kind === "videoinput"
     );
+    console.log("Video Devices:", mediaDevices);
+    
     setMediaDevices(mediaDevices);
     return mediaDevices;
   };
 
   const getUserMedia = async (deviceId: string) => {
+    console.log("New Device ID:", deviceId);
+    console.log("Devices:", (await navigator.mediaDevices.enumerateDevices()).filter(
+      (device) => device.kind === "videoinput"
+    ));
+    
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { deviceId } });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { deviceId: {exact: deviceId} || undefined } });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
         setStream(stream);
@@ -73,7 +80,6 @@ const Recorder: FC<RecorderProps> = () => {
     } catch (err) {
       alert("Unable to capture your camera. Please check console logs.");
       console.error(err);
-      return null;
     }
   };
 
@@ -154,7 +160,7 @@ const Recorder: FC<RecorderProps> = () => {
             onChange={(e) => changeDevice(e.target.value)}
           >
             {mediaDevices.map((device) => (
-              <option key={device.deviceId} value={device.groupId}>
+              <option key={device.deviceId} value={device.deviceId}>
                 {device.label}
               </option>
             ))}
