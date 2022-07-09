@@ -1,6 +1,12 @@
 import { FC } from "react";
 import { useEffect, useRef, useState } from "react";
 import RecordRTC from "recordrtc";
+import { Icon, IconifyIcon } from '@iconify/react';
+import record12Regular from '@iconify/icons-fluent/record-12-regular';
+import arrowCounterclockwise12Regular from '@iconify/icons-fluent/arrow-counterclockwise-12-regular';
+import stop16Filled from '@iconify/icons-fluent/stop-16-filled';
+import play12Filled from '@iconify/icons-fluent/play-12-filled';
+import pause12Filled from '@iconify/icons-fluent/pause-12-filled';
 
 enum States {
   IDLE,
@@ -24,21 +30,23 @@ const Recorder: FC<RecorderProps> = () => {
     }
   }, [videoElRef]);
 
-  let mainButtonText = "";
+  let mainButtonIcon: IconifyIcon;
   switch (state) {
     case States.IDLE:
-      mainButtonText = "Start Recording";
+      mainButtonIcon = record12Regular;
       break;
     case States.PAUSED:
-      mainButtonText = "Stop Recording";
+      mainButtonIcon = stop16Filled;
       break;
     case States.RECORDED:
-      mainButtonText = "Record Again";
+      mainButtonIcon = arrowCounterclockwise12Regular;
       break;
     case States.RECORDING:
-      mainButtonText = "Stop Recording";
+      mainButtonIcon = stop16Filled;
       break;
   }
+
+  const secondButtonIcon = state === States.PAUSED ? play12Filled : pause12Filled;
 
   const getUserMedia = async () => {
     try {
@@ -66,14 +74,13 @@ const Recorder: FC<RecorderProps> = () => {
         stopRecording();
         break;
       case States.RECORDED:
-        startRecording();
+        recordAgain();
         break;
     }
   };
 
   const startRecording = () => {
     if (stream) {
-      videoElRef.current!.srcObject = stream;
       const recorder = new RecordRTC(stream, { type: "video" });
       recorder.startRecording();
       setRecorder(recorder);
@@ -103,20 +110,27 @@ const Recorder: FC<RecorderProps> = () => {
     }
   };
 
+  const recordAgain = () => {
+    videoElRef.current!.srcObject = stream;
+    setState(States.IDLE);
+  }
+
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <div className="h-full max-h-full max-w-full mx-auto aspect-3/4 bg-slate-600 relative">
-        <button className="absolute top-0 left-0 z-10 bg-green-600 text-white p-2" onClick={actionButtonHandler}>
-          {mainButtonText}
-        </button>
-        {(state === States.RECORDING || state === States.PAUSED) && (
-          <button
-            className="absolute top-0 right-0 z-10 bg-blue-500 text-white p-2"
-            onClick={() => (state === States.PAUSED ? resumeRecording() : pauseRecording())}
-          >
-            {state === States.PAUSED ? "Resume Recording" : "Pause Recording"}
+        <div className="flex absolute bottom-20 justify-center items-center w-full space-x-4">
+          <button className="z-10 bg-white/25 text-white p-1 rounded-full" onClick={actionButtonHandler}>
+            <Icon icon={mainButtonIcon} className="text-4xl text-red-400"/>
           </button>
-        )}
+          {(state === States.RECORDING || state === States.PAUSED) && (
+            <button
+              className="z-10 bg-white/25 text-white p-1 rounded-full"
+              onClick={() => (state === States.PAUSED ? resumeRecording() : pauseRecording())}
+            >
+              <Icon icon={secondButtonIcon} className="text-4xl"/>
+            </button>
+          )}
+        </div>
         <video
           id="the-video"
           autoPlay
