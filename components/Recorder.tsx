@@ -50,7 +50,9 @@ const Recorder: FC<RecorderProps> = () => {
 
   const getUserMedia = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: {
+        aspectRatio: 3/4
+      } });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
         setStream(stream);
