@@ -123,7 +123,7 @@ const Recorder: FC<RecorderProps> = () => {
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <div className="h-full max-h-full max-w-full mx-auto aspect-3/4 bg-slate-600 relative">
-        {mediaDevices && (
+        {mediaDevices.length > 0 && (
           <select value={mediaDevices[0].deviceId} className="absolute top-0 left-0 z-10">
             {mediaDevices.map((device) => (
               <option key={device.deviceId} value={device.groupId}>
