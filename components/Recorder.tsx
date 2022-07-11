@@ -87,8 +87,13 @@ const Recorder: FC<RecorderProps> = () => {
       track.stop();
     });
 
-    if (currentCam === "user") getUserMedia("environment");
-    else getUserMedia("user");
+    if (currentCam === "user") {
+      getUserMedia("environment");
+      setCurrentCam("environment");
+    } else {
+      getUserMedia("user");
+      setCurrentCam("user");
+    }
   };
 
   const actionButtonHandler = () => {
