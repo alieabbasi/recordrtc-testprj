@@ -23,7 +23,7 @@ const Recorder: FC<RecorderProps> = () => {
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [currentCam, setCurrentCam] = useState<"user" | "environment">("environment");
-  const [sizes, setSizes] = useState<{ width: number; height: number }>();
+  const [sizes, setSizes] = useState<{ width: number | undefined; height: number | undefined }>();
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
@@ -62,15 +62,15 @@ const Recorder: FC<RecorderProps> = () => {
       stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
       alert("Started Stream:" + stream.id);
     } catch (err) {
-      alert("Failed To Capture Stream in [getMaxSizes()] (( FacingMode: " + facingMode + " ))" );
+      alert("Failed To Capture Stream in [getMaxSizes()] (( FacingMode: " + facingMode + " ))");
       return;
     }
-    let width: number = 0,
-      height: number = 0;
+    let width: number | undefined = undefined,
+      height: number | undefined = undefined;
     try {
       stream.getTracks().forEach((track) => {
-        width = track.getCapabilities().width?.max || 0;
-        height = track.getCapabilities().height?.max || 0;
+        width = track.getCapabilities().width?.max || undefined;
+        height = track.getCapabilities().height?.max || undefined;
         alert("Found Stream Sizes: " + width + " " + height);
         track.stop();
       });
@@ -115,7 +115,7 @@ const Recorder: FC<RecorderProps> = () => {
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: { facingMode },
+        video: { facingMode, width: sizes?.width, height: sizes?.height },
       });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
@@ -230,7 +230,7 @@ const Recorder: FC<RecorderProps> = () => {
           muted={state === States.RECORDED ? false : true}
           ref={videoElRef}
         ></video>
-      {sizes && <div className="z-10 absolute top-0 left-0 bg-white">{JSON.stringify(sizes)}</div>}
+        {sizes && <div className="z-10 absolute top-0 left-0 bg-white">{JSON.stringify(sizes)}</div>}
       </div>
     </div>
   );
