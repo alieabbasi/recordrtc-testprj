@@ -71,6 +71,20 @@ const Recorder: FC<RecorderProps> = () => {
       stream.getTracks().forEach((track) => {
         width = track.getCapabilities().width?.max || undefined;
         height = track.getCapabilities().height?.max || undefined;
+        if (!width || !height) return;
+
+        if (width > height) {
+          if (width > 1920) {
+            width = 1920;
+            height = height / (track.getCapabilities().width!.max! / width);
+          }
+        } else {
+          if (height > 1080) {
+            height = 1080;
+            height = height / (track.getCapabilities().height!.max! / height);
+          }
+        }
+
         alert("Found Stream Sizes: " + width + " " + height);
         track.stop();
       });
