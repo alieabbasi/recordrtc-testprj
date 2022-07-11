@@ -95,8 +95,8 @@ const Recorder: FC<RecorderProps> = () => {
 
   const getUserMedia = async (facingMode: "user" | "environment") => {
     try {
-      const sizes = await getMaxSizes(facingMode);
-      setSizes(sizes);
+      // const sizes = await getMaxSizes(facingMode);
+      // setSizes(sizes);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
