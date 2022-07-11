@@ -99,6 +99,7 @@ const Recorder: FC<RecorderProps> = () => {
           stream.getTracks().forEach((track) => {
             console.log("Capabilities:", track.getCapabilities());
             console.log("Settings:", track.getSettings());
+            track.stop();
           });
         });
     });
