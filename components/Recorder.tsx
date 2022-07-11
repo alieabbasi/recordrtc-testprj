@@ -61,8 +61,8 @@ const Recorder: FC<RecorderProps> = () => {
     let width: number = 0,
       height: number = 0;
     stream.getTracks().forEach((track) => {
-      width = track.getCapabilities().width!.max!;
-      height = track.getCapabilities().height!.max!;
+      width = track.getCapabilities().width!.max || 0;
+      height = track.getCapabilities().height!.max || 0;
     });
     return { width, height };
   };
@@ -95,8 +95,8 @@ const Recorder: FC<RecorderProps> = () => {
 
   const getUserMedia = async (facingMode: "user" | "environment") => {
     try {
-      // const sizes = await getMaxSizes(facingMode);
-      // setSizes(sizes);
+      const sizes = await getMaxSizes(facingMode);
+      setSizes(sizes);
 
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
