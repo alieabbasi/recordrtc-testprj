@@ -52,21 +52,40 @@ const Recorder: FC<RecorderProps> = () => {
 
   const startDevice = async () => {
     await getUserMedia(currentCam);
+    getDevices();
   };
 
-  // const getDevices = async () => {
-  //   const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
-  //     (device) => device.kind === "videoinput"
-  //   );
-  //   console.log("Video Devices:", mediaDevices);
-  //   return mediaDevices;
-  // };
+  const getDevices = async () => {
+    const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
+      (device) => device.kind === "videoinput"
+    );
+
+    mediaDevices.forEach((device) => {
+      navigator.mediaDevices
+        .getUserMedia({
+          audio: false,
+          video: {
+            deviceId: { exact: device.deviceId },
+          },
+        })
+        .then((stream) => {
+          console.log("Found Video Input:", stream.id);
+          stream.getTracks().forEach((track) => {
+            console.log("Capabilities:", track.getCapabilities());
+            console.log("Settings:", track.getSettings());
+          });
+        });
+    });
+
+    console.log("Video Devices:", mediaDevices);
+    return mediaDevices;
+  };
 
   const getUserMedia = async (type: "user" | "environment") => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: { facingMode: type },
+        video: { facingMode: type, focusMode: { ideal: "continuous" } },
       });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
