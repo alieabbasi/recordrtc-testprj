@@ -22,7 +22,7 @@ const Recorder: FC<RecorderProps> = () => {
   const [state, setState] = useState<States>(States.IDLE);
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [currentCam, setCurrentCam] = useState<"user" | "environment">("user");
+  const [currentCam, setCurrentCam] = useState<"user" | "environment">("environment");
   const [sizes, setSizes] = useState<{ width: number; height: number }>();
 
   const videoElRef = useRef<HTMLVideoElement>(null);
@@ -72,6 +72,7 @@ const Recorder: FC<RecorderProps> = () => {
         width = track.getCapabilities().width?.max || 0;
         height = track.getCapabilities().height?.max || 0;
         alert("Found Stream Sizes: " + width + " " + height);
+        track.stop();
       });
     } catch (err) {
       alert("Failed To Get Tracks in [getMaxSizes()]");
