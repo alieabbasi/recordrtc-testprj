@@ -7,6 +7,7 @@ import arrowCounterclockwise12Regular from "@iconify/icons-fluent/arrow-counterc
 import stop16Filled from "@iconify/icons-fluent/stop-16-filled";
 import play12Filled from "@iconify/icons-fluent/play-12-filled";
 import pause12Filled from "@iconify/icons-fluent/pause-12-filled";
+import cameraSwitch20Filled from "@iconify/icons-fluent/camera-switch-20-filled";
 
 enum States {
   IDLE,
@@ -18,11 +19,10 @@ enum States {
 interface RecorderProps {}
 
 const Recorder: FC<RecorderProps> = () => {
-  const [mediaDevices, setMediaDevices] = useState<MediaDeviceInfo[]>([]);
   const [state, setState] = useState<States>(States.IDLE);
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
-  const [activeDevice, setActiveDevice] = useState<string>("");
+  const [currentCam, setCurrentCam] = useState<"user" | "environment">("user");
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
@@ -51,28 +51,23 @@ const Recorder: FC<RecorderProps> = () => {
   const secondButtonIcon = state === States.PAUSED ? play12Filled : pause12Filled;
 
   const startDevice = async () => {
-    const devices = await getDevices();
-    await getUserMedia(devices[0].deviceId);
+    await getUserMedia(currentCam);
   };
 
-  const getDevices = async () => {
-    const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
-      (device) => device.kind === "videoinput"
-    );
-    console.log("Video Devices:", mediaDevices);
-    
-    setMediaDevices(mediaDevices);
-    return mediaDevices;
-  };
+  // const getDevices = async () => {
+  //   const mediaDevices = (await navigator.mediaDevices.enumerateDevices()).filter(
+  //     (device) => device.kind === "videoinput"
+  //   );
+  //   console.log("Video Devices:", mediaDevices);
+  //   return mediaDevices;
+  // };
 
-  const getUserMedia = async (deviceId: string) => {
-    console.log("New Device ID:", deviceId);
-    console.log("Devices:", (await navigator.mediaDevices.enumerateDevices()).filter(
-      (device) => device.kind === "videoinput"
-    ));
-    
+  const getUserMedia = async (type: "user" | "environment") => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true, video: { deviceId: {exact: deviceId} || undefined } });
+      const stream = await navigator.mediaDevices.getUserMedia({
+        audio: true,
+        video: { facingMode: type },
+      });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
         setStream(stream);
@@ -83,18 +78,17 @@ const Recorder: FC<RecorderProps> = () => {
     }
   };
 
-  const changeDevice = (deviceId: string) => {
-    if (!deviceId) return;
-    const deviceInfo = mediaDevices.filter((d) => d.deviceId === deviceId);
-    if (!deviceInfo) return;
-
-    if (stream) {
-      stream.getTracks().forEach((track) => {
-        track.stop();
-      });
+  const changeDevice = () => {
+    if (!stream) {
+      console.log("No Stream!!!");
+      return;
     }
-    setActiveDevice(deviceId);
-    getUserMedia(deviceId);
+    stream.getTracks().forEach((track) => {
+      track.stop();
+    });
+
+    if (currentCam === "user") getUserMedia("environment");
+    else getUserMedia("user");
   };
 
   const actionButtonHandler = () => {
@@ -153,18 +147,12 @@ const Recorder: FC<RecorderProps> = () => {
   return (
     <div className="w-screen h-screen flex justify-center items-center">
       <div className="h-full max-h-full max-w-full mx-auto aspect-3/4 bg-slate-600 relative">
-        {mediaDevices.length > 0 && (
-          <select
-            value={activeDevice}
-            className="absolute top-0 left-0 z-10"
-            onChange={(e) => changeDevice(e.target.value)}
-          >
-            {mediaDevices.map((device) => (
-              <option key={device.deviceId} value={device.deviceId}>
-                {device.label}
-              </option>
-            ))}
-          </select>
+        {state === States.IDLE && (
+          <div className="flex absolute top-10 right-10 justify-center items-center">
+            <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={changeDevice}>
+              <Icon icon={cameraSwitch20Filled} className="text-6xl" />
+            </button>
+          </div>
         )}
         <div className="flex absolute bottom-20 justify-center items-center w-full space-x-4">
           <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={actionButtonHandler}>
@@ -180,12 +168,12 @@ const Recorder: FC<RecorderProps> = () => {
           )}
         </div>
         <video
+          className="w-full h-full object-cover"
           id="the-video"
           autoPlay
           playsInline
           controls={state === States.RECORDED ? true : false}
           muted={state === States.RECORDED ? false : true}
-          className="w-full h-full"
           ref={videoElRef}
         ></video>
       </div>
