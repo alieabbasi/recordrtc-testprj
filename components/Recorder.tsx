@@ -23,6 +23,7 @@ const Recorder: FC<RecorderProps> = () => {
   const [recorder, setRecorder] = useState<RecordRTC | null>(null);
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [currentCam, setCurrentCam] = useState<"user" | "environment">("user");
+  const [sizes, setSizes] = useState<{ width: number; height: number }>();
 
   const videoElRef = useRef<HTMLVideoElement>(null);
 
@@ -52,7 +53,18 @@ const Recorder: FC<RecorderProps> = () => {
 
   const startDevice = async () => {
     await getUserMedia(currentCam);
-    getDevices();
+    // getDevices();
+  };
+
+  const getMaxSizes = async (facingMode: "user" | "environment") => {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
+    let width: number = 0,
+      height: number = 0;
+    stream.getTracks().forEach((track) => {
+      width = track.getCapabilities().width!.max!;
+      height = track.getCapabilities().height!.max!;
+    });
+    return { width, height };
   };
 
   const getDevices = async () => {
@@ -81,11 +93,14 @@ const Recorder: FC<RecorderProps> = () => {
     return mediaDevices;
   };
 
-  const getUserMedia = async (type: "user" | "environment") => {
+  const getUserMedia = async (facingMode: "user" | "environment") => {
     try {
+      const sizes = await getMaxSizes(facingMode);
+      setSizes(sizes);
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: true,
-        video: { facingMode: type, focusMode: { ideal: "continuous" } },
+        video: { facingMode },
       });
       if (videoElRef.current) {
         videoElRef.current.srcObject = stream;
@@ -200,6 +215,7 @@ const Recorder: FC<RecorderProps> = () => {
           muted={state === States.RECORDED ? false : true}
           ref={videoElRef}
         ></video>
+      {sizes && <div className="z-10 absolute top-0 left-0 bg-white">{JSON.stringify(sizes)}</div>}
       </div>
     </div>
   );
