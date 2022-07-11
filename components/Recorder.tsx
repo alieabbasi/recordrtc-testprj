@@ -62,7 +62,7 @@ const Recorder: FC<RecorderProps> = () => {
       stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
       alert("Started Stream:" + stream.id);
     } catch (err) {
-      alert("Failed To Capture Stream in [getMaxSizes()]");
+      alert("Failed To Capture Stream in [getMaxSizes()] (( FacingMode: " + facingMode + " ))" );
       return;
     }
     let width: number = 0,
