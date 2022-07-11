@@ -61,8 +61,8 @@ const Recorder: FC<RecorderProps> = () => {
     let width: number = 0,
       height: number = 0;
     stream.getTracks().forEach((track) => {
-      width = track.getCapabilities().width!.max || 0;
-      height = track.getCapabilities().height!.max || 0;
+      width = track.getCapabilities().width?.max || 0;
+      height = track.getCapabilities().height?.max || 0;
     });
     return { width, height };
   };
