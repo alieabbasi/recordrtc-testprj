@@ -60,7 +60,6 @@ const Recorder: FC<RecorderProps> = () => {
     let stream = null;
     try {
       stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode } });
-      alert("Started Stream:" + stream.id);
     } catch (err) {
       alert("Failed To Capture Stream in [getMaxSizes()] (( FacingMode: " + facingMode + " ))");
       return;
@@ -84,12 +83,9 @@ const Recorder: FC<RecorderProps> = () => {
             height = height / (track.getCapabilities().height!.max! / height);
           }
         }
-
-        alert("Found Stream Sizes: " + width + " " + height);
         track.stop();
       });
     } catch (err) {
-      alert("Failed To Get Tracks in [getMaxSizes()]");
       return;
     }
     return { width, height };
@@ -214,37 +210,39 @@ const Recorder: FC<RecorderProps> = () => {
 
   return (
     <div className="w-screen h-screen flex justify-center items-center">
-      <div className="h-full max-h-full max-w-full mx-auto aspect-3/4 bg-slate-600 relative">
-        {state === States.IDLE && (
-          <div className="flex absolute top-10 right-10 justify-center items-center">
-            <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={changeDevice}>
-              <Icon icon={cameraSwitch20Filled} className="text-6xl" />
-            </button>
-          </div>
-        )}
-        <div className="flex absolute bottom-20 justify-center items-center w-full space-x-4">
-          <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={actionButtonHandler}>
-            <Icon icon={mainButtonIcon} className="text-6xl text-red-400" />
-          </button>
-          {(state === States.RECORDING || state === States.PAUSED) && (
-            <button
-              className="z-10 bg-black/50 text-white p-2 rounded-full"
-              onClick={() => (state === States.PAUSED ? resumeRecording() : pauseRecording())}
-            >
-              <Icon icon={secondButtonIcon} className="text-6xl" />
-            </button>
+      <div className="h-full max-h-full w-full max-w-full bg-slate-600 relative flex justify-center items-center">
+        <div className="w-max object-cover relative">
+          {state === States.IDLE && (
+            <div className="flex absolute top-10 right-10 justify-center items-center">
+              <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={changeDevice}>
+                <Icon icon={cameraSwitch20Filled} className="text-6xl" />
+              </button>
+            </div>
           )}
+          <div className="flex absolute bottom-20 justify-center items-center w-full space-x-4">
+            <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={actionButtonHandler}>
+              <Icon icon={mainButtonIcon} className="text-6xl text-red-400" />
+            </button>
+            {(state === States.RECORDING || state === States.PAUSED) && (
+              <button
+                className="z-10 bg-black/50 text-white p-2 rounded-full"
+                onClick={() => (state === States.PAUSED ? resumeRecording() : pauseRecording())}
+              >
+                <Icon icon={secondButtonIcon} className="text-6xl" />
+              </button>
+            )}
+          </div>
+          <video
+            className="w-full h-full object-cover"
+            id="the-video"
+            autoPlay
+            playsInline
+            controls={state === States.RECORDED ? true : false}
+            muted={state === States.RECORDED ? false : true}
+            ref={videoElRef}
+          ></video>
+          {sizes && <div className="z-10 absolute top-0 left-0 bg-white">{JSON.stringify(sizes)}</div>}
         </div>
-        <video
-          className="w-full h-full object-cover"
-          id="the-video"
-          autoPlay
-          playsInline
-          controls={state === States.RECORDED ? true : false}
-          muted={state === States.RECORDED ? false : true}
-          ref={videoElRef}
-        ></video>
-        {sizes && <div className="z-10 absolute top-0 left-0 bg-white">{JSON.stringify(sizes)}</div>}
       </div>
     </div>
   );
