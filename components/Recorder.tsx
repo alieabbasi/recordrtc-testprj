@@ -141,7 +141,7 @@ const Recorder: FC<RecorderProps> = () => {
         setVideoStream(newVideoStream);
 
         if (recorder) {
-          recorder.resetVideoStreams([newVideoStream]);
+          recorder.resetVideoStreams([newVideoStream, audioStream!]);
         }
       }
     } catch (err) {
