@@ -22,7 +22,8 @@ interface RecorderProps {}
 const Recorder: FC<RecorderProps> = () => {
   const [state, setState] = useState<States>(States.IDLE);
   const [recorder, setRecorder] = useState<MultiStreamRecorder | null>(null);
-  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
+  const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
   const [currentCam, setCurrentCam] = useState<"user" | "environment">("environment");
   const [sizes, setSizes] = useState<{ width: number | undefined; height: number | undefined }>();
 
@@ -123,17 +124,24 @@ const Recorder: FC<RecorderProps> = () => {
     try {
       const sizes = await getMaxSizes(facingMode);
       setSizes(sizes);
+      if (!audioStream) {
+        const newAudioStream = await navigator.mediaDevices.getUserMedia({
+          audio: true,
+          video: false,
+        });
+        setAudioStream(newAudioStream);
+      }
 
-      const stream = await navigator.mediaDevices.getUserMedia({
-        audio: true,
+      const newVideoStream = await navigator.mediaDevices.getUserMedia({
+        audio: false,
         video: { facingMode, width: sizes?.width, height: sizes?.height },
       });
       if (videoElRef.current) {
-        videoElRef.current.srcObject = stream;
-        setStream(stream);
+        videoElRef.current.srcObject = newVideoStream;
+        setVideoStream(newVideoStream);
 
         if (recorder) {
-          recorder.resetVideoStreams([stream]);
+          recorder.resetVideoStreams([newVideoStream]);
         }
       }
     } catch (err) {
@@ -143,11 +151,11 @@ const Recorder: FC<RecorderProps> = () => {
   };
 
   const changeDevice = () => {
-    if (!stream) {
+    if (!videoStream) {
       console.log("No Stream!!!");
       return;
     }
-    stream.getTracks().forEach((track) => {
+    videoStream.getTracks().forEach((track) => {
       track.stop();
     });
     if (currentCam === "user") {
@@ -177,8 +185,8 @@ const Recorder: FC<RecorderProps> = () => {
   };
 
   const startRecording = () => {
-    if (stream) {
-      const recorder = new MultiStreamRecorder([stream], { type: "video", recorderType: MultiStreamRecorder });
+    if (audioStream && videoStream) {
+      const recorder = new MultiStreamRecorder([audioStream, videoStream], { type: "video", recorderType: MultiStreamRecorder });
       console.log("RECORDER:", recorder);
       recorder.record();
       setRecorder(recorder);
@@ -209,7 +217,7 @@ const Recorder: FC<RecorderProps> = () => {
   };
 
   const recordAgain = () => {
-    videoElRef.current!.srcObject = stream;
+    videoElRef.current!.srcObject = videoStream;
     setState(States.IDLE);
   };
 
@@ -217,7 +225,7 @@ const Recorder: FC<RecorderProps> = () => {
     <div className="w-screen h-screen flex justify-center items-center">
       <div className="h-full max-h-full w-full max-w-full bg-slate-600 relative flex justify-center items-center">
         <div className="w-max object-cover relative">
-          {(state !== States.RECORDED) && (
+          {state !== States.RECORDED && (
             <div className="flex absolute top-10 right-10 justify-center items-center">
               <button className="z-10 bg-black/50 text-white p-2 rounded-full" onClick={changeDevice}>
                 <Icon icon={cameraSwitch20Filled} className="text-6xl" />
