@@ -137,7 +137,7 @@ const Recorder: FC<RecorderProps> = () => {
 
       const newVideoStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode, width: {exact: sizes?.width}, height: {exact: sizes?.height} },
+        video: { facingMode, width: sizes?.width, height: sizes?.height, aspectRatio: 3/4 },
       });
       if (videoElRef.current) {
         videoElRef.current.srcObject = newVideoStream;
