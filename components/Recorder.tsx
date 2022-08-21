@@ -142,6 +142,7 @@ const Recorder: FC<RecorderProps> = () => {
       if (videoElRef.current) {
         videoElRef.current.srcObject = newVideoStream;
         setVideoStream(newVideoStream);
+        newVideoStream.getTracks().forEach(track => alert(`Track Dimensions: width = ${track.getSettings().width} & height = ${track.getSettings().height}`))
 
         if (recorder) {
           recorder.resetVideoStreams([newVideoStream, audioStream!]);
