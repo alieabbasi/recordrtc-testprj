@@ -77,13 +77,13 @@ const Recorder: FC<RecorderProps> = () => {
         if (!width || !height) return;
 
         if (width < (height * 3) / 4) {
-          if (width > 1440) {
-            width = 1440;
+          if (width > 720) {
+            width = 720;
           }
           height = (width * 4) / 3;
         } else {
-          if (height > 1920) {
-            height = 1920;
+          if (height > 960) {
+            height = 960;
           }
           width = (height * 3) / 4;
         }
