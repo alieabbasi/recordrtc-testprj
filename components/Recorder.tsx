@@ -137,14 +137,13 @@ const Recorder: FC<RecorderProps> = () => {
 
       const newVideoStream = await navigator.mediaDevices.getUserMedia({
         audio: false,
-        video: { facingMode, width: sizes?.width, height: sizes?.height, aspectRatio: 3/4 },
+        video: { facingMode, width: sizes?.height, height: sizes?.width, aspectRatio: 3/4 },
       });
       if (videoElRef.current) {
         videoElRef.current.srcObject = newVideoStream;
         setVideoStream(newVideoStream);
         newVideoStream.getTracks().forEach(track => {
           alert(`Track Dimensions: width = ${track.getSettings().width} & height = ${track.getSettings().height}`);
-          track.applyConstraints({height: sizes?.height, width: sizes?.width})
         })
 
         if (recorder) {
