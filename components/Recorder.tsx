@@ -72,18 +72,20 @@ const Recorder: FC<RecorderProps> = () => {
       stream.getTracks().forEach((track) => {
         width = track.getCapabilities().width?.max || undefined;
         height = track.getCapabilities().height?.max || undefined;
+        alert("track's width:" + width + "\n track's height:" + height);
+        
         if (!width || !height) return;
 
-        if (width > height) {
-          if (width > 1920) {
-            width = 1920;
-            height = height / (track.getCapabilities().width!.max! / width);
+        if (width < (height * 3) / 4) {
+          if (width > 1440) {
+            width = 1440;
           }
+          height = (width * 4) / 3;
         } else {
-          if (height > 1080) {
-            height = 1080;
-            height = height / (track.getCapabilities().height!.max! / height);
+          if (height > 1920) {
+            height = 1920;
           }
+          width = (height * 3) / 4;
         }
         track.stop();
       });
@@ -123,6 +125,7 @@ const Recorder: FC<RecorderProps> = () => {
   const getUserMedia = async (facingMode: "user" | "environment") => {
     try {
       const sizes = await getMaxSizes(facingMode);
+      alert("Sizes:  " + JSON.stringify(sizes));
       setSizes(sizes);
       if (!audioStream) {
         const newAudioStream = await navigator.mediaDevices.getUserMedia({
