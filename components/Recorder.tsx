@@ -76,16 +76,16 @@ const Recorder: FC<RecorderProps> = () => {
         
         if (!width || !height) return;
 
-        if (width < (height * 3) / 4) {
+        if (width < (height * 9) / 16) {
           if (width > 720) {
             width = 720;
           }
-          height = (width * 4) / 3;
+          height = (width * 16) / 9;
         } else {
-          if (height > 960) {
-            height = 960;
+          if (height > 1280) {
+            height = 1280;
           }
-          width = (height * 3) / 4;
+          width = (height * 9) / 16;
         }
         track.stop();
       });
