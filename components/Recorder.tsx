@@ -24,7 +24,7 @@ const Recorder: FC<RecorderProps> = () => {
   const [recorder, setRecorder] = useState<MultiStreamRecorder | null>(null);
   const [videoStream, setVideoStream] = useState<MediaStream | null>(null);
   const [audioStream, setAudioStream] = useState<MediaStream | null>(null);
-  const [currentCam, setCurrentCam] = useState<"user" | "environment">("environment");
+  const [currentCam, setCurrentCam] = useState<"user" | "environment">("user");
   const [sizes, setSizes] = useState<{ width: number | undefined; height: number | undefined }>();
 
   const videoElRef = useRef<HTMLVideoElement>(null);
